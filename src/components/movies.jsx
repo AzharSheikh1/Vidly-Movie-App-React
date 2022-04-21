@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import { getMovies } from '../services/fakeMovieService';
-import Paginate from './components/common/paginate';
 import Like from './common/likes';
+import Pagination from './common/pagination';
+import { paginate } from '../utils/paginate';
 
 class Movie extends Component {
     state = {
         movies : getMovies(),
         pageSize : 4,
+        currentPage: 1,
     }
 
     handleDelete = (id) => {
@@ -25,14 +27,18 @@ class Movie extends Component {
         this.setState({movies});
     }
 
-    handleOnPageChange = (page) => {
-        console.log(page)
+    handlePageChange = (page) => {
+        this.setState({currentPage: page});
     }
 
-    render() { 
+    render() {
         const {length : count} = this.state.movies
+        const {pageSize, currentPage, movies:allMovies} = this.state;
 
         if (count === 0) return <p>There are no movies in the database</p>;
+
+        const movies = paginate(allMovies, currentPage, pageSize)
+
         return (
             <React.Fragment>
                 <p>There are {count} movies in a database</p>
@@ -46,7 +52,7 @@ class Movie extends Component {
                         </tr>
                     </thead>
                     <tbody>
-                    {this.state.movies.map(movie =>
+                    {movies.map(movie =>
                             <tr key={movie._id}>
                                 <td>{movie.title}</td>
                                 <td>{movie.genre.name}</td>
@@ -67,14 +73,15 @@ class Movie extends Component {
                     </tbody>
                 </table>
 
-                <Paginate 
+                <Pagination 
                     itemCount={count} 
-                    pageSize={this.state.pageSize}
+                    pageSize={pageSize}
                     onPageChange = {this.handlePageChange}
+                    currentPage  = {currentPage}
                 />
             </React.Fragment>
         );
     }
 }
- 
+
 export default Movie;
